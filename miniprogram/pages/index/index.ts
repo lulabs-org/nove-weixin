@@ -2,7 +2,7 @@
  * @Author: Mingxuan songmingxuan936@gmail.com
  * @Date: 2026-03-12 22:19:49
  * @LastEditors: Mingxuan songmingxuan936@gmail.com
- * @LastEditTime: 2026-03-13 18:27:42
+ * @LastEditTime: 2026-03-13 18:32:42
  * @FilePath: /miniprogram-1/miniprogram/pages/index/index.ts
  * @Description:
  *
@@ -182,22 +182,66 @@ Page({
   extractArkText(data: any): string {
     if (!data) return "无返回";
     if (typeof data === "string") return data;
-    if (typeof data.output_text === "string") return data.output_text;
-    if (data.output && typeof data.output.text === "string")
-      return data.output.text;
-    if (Array.isArray(data.output_texts) && data.output_texts.length > 0) {
-      const first = data.output_texts[0];
-      if (typeof first === "string") return first;
-      if (first && typeof first.text === "string") return first.text;
+    const texts: string[] = [];
+    const pick = (v: any) => {
+      if (!v) return;
+      if (typeof v === "string") {
+        if (v.trim()) texts.push(v);
+        return;
+      }
+      if (typeof v.text === "string") {
+        if (v.text.trim()) texts.push(v.text);
+        return;
+      }
+      if (typeof v.content === "string") {
+        if (v.content.trim()) texts.push(v.content);
+        return;
+      }
+      if (typeof v.value === "string") {
+        if (v.value.trim()) texts.push(v.value);
+        return;
+      }
+    };
+    if (typeof (data as any).output_text === "string")
+      return (data as any).output_text;
+    if ((data as any).output && typeof (data as any).output.text === "string")
+      return (data as any).output.text;
+    if (Array.isArray((data as any).output)) {
+      const out = (data as any).output as any[];
+      for (const item of out) {
+        if (item && Array.isArray(item.content)) {
+          for (const part of item.content) {
+            pick(part);
+          }
+        } else {
+          pick(item);
+        }
+      }
+      if (texts.length) return texts.join("\n");
     }
-    if (data.choices && data.choices[0]?.message?.content) {
-      const c = data.choices[0].message.content;
+    if (
+      Array.isArray((data as any).output_texts) &&
+      (data as any).output_texts.length > 0
+    ) {
+      const first = (data as any).output_texts[0];
+      pick(first);
+      if (texts.length) return texts.join("\n");
+    }
+    if ((data as any).choices && (data as any).choices[0]?.message?.content) {
+      const c = (data as any).choices[0].message.content;
       if (Array.isArray(c)) {
-        const t = c.find((x: any) => x && (x.text || x.type === "output_text"));
-        if (t?.text) return t.text;
+        for (const part of c) pick(part);
+        if (texts.length) return texts.join("\n");
+      } else {
+        pick(c);
+        if (texts.length) return texts.join("\n");
       }
     }
-    return JSON.stringify(data);
+    try {
+      return JSON.stringify(data);
+    } catch {
+      return String(data);
+    }
   },
 
   onSend() {
