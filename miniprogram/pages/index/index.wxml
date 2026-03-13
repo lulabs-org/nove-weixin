@@ -1,0 +1,20 @@
+<scroll-view class="chat-container" scroll-y="true" scroll-into-view="{{toView}}" scroll-with-animation="true">
+  <view class="message-list">
+    <block wx:for="{{messages}}" wx:key="id">
+      <view class="message-item {{item.role === 'user' ? 'user-message' : 'ai-message'}}" id="msg-{{item.id}}">
+        <view class="bubble">
+          <text user-select="true">{{item.text}}</text>
+        </view>
+      </view>
+    </block>
+    <!-- 底部占位，防止贴底太紧 -->
+    <view id="scroll-bottom" style="height: 40rpx;"></view>
+  </view>
+</scroll-view>
+
+<view class="footer">
+  <view class="input-container">
+    <input class="chat-input" type="text" value="{{inputValue}}" bindinput="onInput" confirm-type="send" bindconfirm="onSend" cursor-spacing="20" placeholder="请输入..." />
+  </view>
+  <button class="send-btn" bindtap="onSend">发送</button>
+</view>
