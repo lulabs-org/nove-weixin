@@ -2,7 +2,7 @@
  * @Author: Mingxuan songmingxuan936@gmail.com
  * @Date: 2026-03-12 22:19:49
  * @LastEditors: Mingxuan songmingxuan936@gmail.com
- * @LastEditTime: 2026-03-13 18:24:49
+ * @LastEditTime: 2026-03-13 18:27:42
  * @FilePath: /miniprogram-1/miniprogram/pages/index/index.ts
  * @Description:
  *
@@ -136,7 +136,26 @@ Page({
         ],
       },
       success: (res) => {
-        const text = this.extractArkText(res.data);
+        const status = res.statusCode || 0;
+        const d: any = res.data as any;
+        let text: string;
+        const hasErr =
+          status < 200 ||
+          status >= 300 ||
+          (d && typeof d === "object" && (d.error || d.Code || d.code));
+        if (hasErr) {
+          const msg =
+            d?.error?.message ||
+            d?.message ||
+            d?.msg ||
+            d?.Message ||
+            d?.Msg ||
+            JSON.stringify(d);
+          text = `请求错误(${status}): ${msg}`;
+        } else {
+          text = this.extractArkText(d);
+        }
+        console.log("Ark response:", res);
         const aiMsgId = Date.now();
         const aiMsg = { id: aiMsgId, role: "ai" as const, text };
         this.setData({
@@ -145,8 +164,13 @@ Page({
         });
       },
       fail: (err) => {
+        console.error("Ark request fail:", err);
         const aiMsgId = Date.now();
-        const aiMsg = { id: aiMsgId, role: "ai" as const, text: "请求失败" };
+        const aiMsg = {
+          id: aiMsgId,
+          role: "ai" as const,
+          text: `请求失败: ${err?.errMsg || "未知错误"}`,
+        };
         this.setData({
           messages: [...this.data.messages, aiMsg],
           toView: `msg-${aiMsgId}`,
