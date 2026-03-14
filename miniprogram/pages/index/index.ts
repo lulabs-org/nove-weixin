@@ -197,8 +197,21 @@ Page({
       return;
     }
 
+    const nowStr = new Date().toLocaleString();
+    const systemPrompt = `当前北京时间: ${nowStr}。
+如果你需要处理与时间相关的请求（如“最近”、“今天”、“明天”等），请参考此时间。`;
+
+    // Ensure we have a system message at the start or updated
+    let history = [...this.data.history];
+    const systemIdx = history.findIndex((h) => h.role === "system");
+    if (systemIdx > -1) {
+      history[systemIdx].content = systemPrompt;
+    } else {
+      history.unshift({ role: "system", content: systemPrompt });
+    }
+
     // Add user message to history
-    const history = [...this.data.history, { role: "user", content: userText }];
+    history.push({ role: "user", content: userText });
     this.setData({ history });
 
     try {
@@ -213,6 +226,19 @@ Page({
           parameters: t.inputSchema,
         },
       }));
+
+      // Add a local "get_current_time" tool as well if model prefers calling it
+      mcpTools.push({
+        type: "function",
+        function: {
+          name: "get_current_time",
+          description: "获取当前北京时间",
+          parameters: {
+            type: "object",
+            properties: {},
+          },
+        },
+      });
 
       // 2. Call AI with tools
       const response = await this.requestArk(model, apiKey, history, mcpTools);
@@ -288,10 +314,15 @@ Page({
         this.addAIMessage(`[AI 正在调用 MCP 工具: ${name}]`);
 
         try {
-          const toolResult = await noveMCP.callTool(name, args);
-          const resultText = JSON.stringify(
-            toolResult.result || toolResult.error,
-          );
+          let resultText = "";
+          if (name === "get_current_time") {
+            resultText = JSON.stringify({
+              current_time: new Date().toLocaleString(),
+            });
+          } else {
+            const toolResult = await noveMCP.callTool(name, args);
+            resultText = JSON.stringify(toolResult.result || toolResult.error);
+          }
 
           updatedHistory = [
             ...updatedHistory,
