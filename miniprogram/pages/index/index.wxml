@@ -3,7 +3,8 @@
     <block wx:for="{{messages}}" wx:key="id">
       <view class="message-item {{item.role === 'user' ? 'user-message' : 'ai-message'}}" id="msg-{{item.id}}">
         <view class="bubble">
-          <text user-select="true">{{item.text}}</text>
+          <rich-text wx:if="{{item.html}}" nodes="{{item.html}}" user-select="true"></rich-text>
+          <text wx:else user-select="true">{{item.text}}</text>
         </view>
       </view>
     </block>

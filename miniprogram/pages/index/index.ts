@@ -2,13 +2,14 @@
  * @Author: Mingxuan songmingxuan936@gmail.com
  * @Date: 2026-03-12 22:19:49
  * @LastEditors: Mingxuan songmingxuan936@gmail.com
- * @LastEditTime: 2026-03-14 10:23:20
+ * @LastEditTime: 2026-03-14 11:01:47
  * @FilePath: /miniprogram-1/miniprogram/pages/index/index.ts
  * @Description:
  *
  * Copyright (c) 2026 by ${git_name_email}, All Rights Reserved.
  */
 import { noveMCP } from "../../utils/mcp";
+import { mdToRichText } from "../../utils/md-parser";
 
 Page({
   data: {
@@ -17,6 +18,7 @@ Page({
       id: number;
       role: "user" | "ai" | "system" | "tool";
       text: string;
+      html?: string;
     }[],
     toView: "",
     history: [] as any[], // AI conversation history
@@ -48,10 +50,12 @@ Page({
       const val = setKeyDash[1];
       wx.setStorageSync("VOLCENGINE_API_KEY", val);
       const aiMsgId = Date.now();
+      const valText = "已保存 API Key: " + this.maskSecret(val);
       const aiMsg = {
         id: aiMsgId,
         role: "ai" as const,
-        text: "已保存 API Key: " + this.maskSecret(val),
+        text: valText,
+        html: mdToRichText(valText),
       };
       this.setData({
         messages: [...this.data.messages, aiMsg],
@@ -66,10 +70,12 @@ Page({
       const val = setKey[2];
       wx.setStorageSync("VOLCENGINE_API_KEY", val);
       const aiMsgId = Date.now();
+      const valText = "已保存 API Key: " + this.maskSecret(val);
       const aiMsg = {
         id: aiMsgId,
         role: "ai" as const,
-        text: "已保存 API Key: " + this.maskSecret(val),
+        text: valText,
+        html: mdToRichText(valText),
       };
       this.setData({
         messages: [...this.data.messages, aiMsg],
@@ -82,10 +88,12 @@ Page({
       const val = setModel[2];
       wx.setStorageSync("VOLCENGINE_MODEL", val);
       const aiMsgId = Date.now();
+      const valText = "已保存模型: " + val;
       const aiMsg = {
         id: aiMsgId,
         role: "ai" as const,
-        text: "已保存模型: " + val,
+        text: valText,
+        html: mdToRichText(valText),
       };
       this.setData({
         messages: [...this.data.messages, aiMsg],
@@ -96,10 +104,14 @@ Page({
     if (/^\/?get\s+(apikey|key|VOLCENGINE_API_KEY)$/i.test(t)) {
       const v = (wx.getStorageSync("VOLCENGINE_API_KEY") as string) || "";
       const aiMsgId = Date.now();
+      const valText = v
+        ? "当前 API Key: " + this.maskSecret(v)
+        : "未设置 API Key";
       const aiMsg = {
         id: aiMsgId,
         role: "ai" as const,
-        text: v ? "当前 API Key: " + this.maskSecret(v) : "未设置 API Key",
+        text: valText,
+        html: mdToRichText(valText),
       };
       this.setData({
         messages: [...this.data.messages, aiMsg],
@@ -110,10 +122,12 @@ Page({
     if (/^\/?get\s+(model|VOLCENGINE_MODEL)$/i.test(t)) {
       const v = (wx.getStorageSync("VOLCENGINE_MODEL") as string) || "";
       const aiMsgId = Date.now();
+      const valText = v ? "当前模型: " + v : "未设置模型";
       const aiMsg = {
         id: aiMsgId,
         role: "ai" as const,
-        text: v ? "当前模型: " + v : "未设置模型",
+        text: valText,
+        html: mdToRichText(valText),
       };
       this.setData({
         messages: [...this.data.messages, aiMsg],
@@ -141,24 +155,18 @@ Page({
     const parts = command.split(" ");
     const action = parts[1]; // list, call, etc.
 
-    const addAIMessage = (text: string) => {
-      const msg = { id: Date.now(), role: "ai" as const, text };
-      this.setData({
-        messages: [...this.data.messages, msg],
-        toView: `msg-${msg.id}`,
-      });
-    };
-
     try {
       if (!noveMCP.postUrl) {
-        addAIMessage("正在连接 MCP 服务器...");
+        this.addAIMessage("正在连接 MCP 服务器...");
         await noveMCP.connect();
       }
 
       if (action === "list") {
-        addAIMessage("正在获取工具列表...");
+        this.addAIMessage("正在获取工具列表...");
         const res = await noveMCP.listTools();
-        addAIMessage("MCP 工具列表:\n" + JSON.stringify(res.result, null, 2));
+        this.addAIMessage(
+          "MCP 工具列表:\n" + JSON.stringify(res.result, null, 2),
+        );
       } else if (action === "call") {
         const toolName = parts[2];
         const argsStr = parts.slice(3).join(" ");
@@ -167,23 +175,23 @@ Page({
           try {
             args = JSON.parse(argsStr);
           } catch (e) {
-            addAIMessage("参数 JSON 格式错误");
+            this.addAIMessage("参数 JSON 格式错误");
             return;
           }
         }
-        addAIMessage(`正在调用工具 ${toolName}...`);
+        this.addAIMessage(`正在调用工具 ${toolName}...`);
         const res = await noveMCP.callTool(toolName, args);
-        addAIMessage(
+        this.addAIMessage(
           `工具返回结果:\n${JSON.stringify(res.result || res.error, null, 2)}`,
         );
       } else {
-        addAIMessage(
+        this.addAIMessage(
           "未知 MCP 命令。可用命令:\n/mcp list\n/mcp call <toolName> <argsJson>",
         );
       }
     } catch (err: any) {
       console.error("MCP Error:", err);
-      addAIMessage(`MCP 错误: ${err.message || JSON.stringify(err)}`);
+      this.addAIMessage(`MCP 错误: ${err.message || JSON.stringify(err)}`);
     }
   },
 
@@ -360,7 +368,9 @@ Page({
 
   addAIMessage(text: string) {
     const aiMsgId = Date.now();
-    const aiMsg = { id: aiMsgId, role: "ai" as const, text };
+    const html = mdToRichText(text);
+    console.log("Generated RichText HTML:", html);
+    const aiMsg = { id: aiMsgId, role: "ai" as const, text, html };
     this.setData({
       messages: [...this.data.messages, aiMsg],
       toView: `msg-${aiMsgId}`,
