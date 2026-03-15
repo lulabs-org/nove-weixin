@@ -56,45 +56,68 @@ page {
   bottom: 0;
   left: 0;
   width: 100%;
-  min-height: 120rpx;
-  background-color: #f5f5f5;
-  border-top: 1rpx solid #e5e5e5;
+  background-color: transparent; /* Remove white background */
   display: flex;
-  align-items: flex-end;
-  padding: 20rpx;
+  align-items: center;
+  padding: 10rpx 30rpx; /* Reduced top padding to move pill down */
   box-sizing: border-box;
   z-index: 100;
-  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  padding-bottom: calc(
+    16rpx + env(safe-area-inset-bottom)
+  ); /* Optimized distance from R-angle */
 }
 
-.input-container {
+.pill-wrapper {
+  display: flex;
   flex: 1;
-  margin-right: 20rpx;
-  background-color: #ffffff;
-  border-radius: 8rpx;
-  padding: 16rpx 20rpx;
+  background-color: #f4f4f4;
+  border-radius: 40rpx;
+  padding: 10rpx 10rpx 10rpx 30rpx;
+  align-items: flex-end;
+  min-height: 80rpx;
   box-sizing: border-box;
+  border: 1rpx solid #e5e5e5;
 }
 
 .chat-input {
-  width: 100%;
-  min-height: 40rpx;
-  max-height: 200rpx;
-  font-size: 28rpx;
+  flex: 1;
+  min-height: 60rpx;
+  max-height: 240rpx;
+  font-size: 30rpx;
   line-height: 40rpx;
+  padding: 10rpx 0;
+  color: #1a1a1a;
   box-sizing: border-box;
 }
 
 .send-btn {
-  width: 140rpx !important;
-  height: 72rpx;
-  line-height: 72rpx;
-  background-color: #07c160;
-  color: white;
-  font-size: 28rpx;
-  padding: 0;
-  border-radius: 8rpx;
-  font-weight: normal;
-  margin: 0;
-  margin-bottom: 4rpx; /* Align with input better */
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  background-color: #e5e5e5; /* Disabled color */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin-left: 20rpx;
+  flex-shrink: 0;
+  margin-bottom: 2rpx;
+}
+
+.send-btn.active {
+  background-color: #000000; /* ChatGPT black active button */
+}
+
+.arrow-up {
+  width: 0;
+  height: 0;
+  border-left: 10rpx solid transparent;
+  border-right: 10rpx solid transparent;
+  border-bottom: 16rpx solid #ffffff;
+  position: relative;
+  top: -2rpx;
+}
+
+.send-btn.active .arrow-up {
+  border-bottom-color: #ffffff;
 }
