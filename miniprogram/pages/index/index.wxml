@@ -15,7 +15,7 @@
 
 <view class="footer">
   <view class="input-container">
-    <input class="chat-input" type="text" value="{{inputValue}}" bindinput="onInput" confirm-type="send" bindconfirm="onSend" cursor-spacing="20" placeholder="请输入..." />
+    <textarea class="chat-input" value="{{inputValue}}" bindinput="onInput" confirm-type="send" bindconfirm="onSend" cursor-spacing="20" placeholder="请输入..." auto-height="true" fixed="true" disable-default-padding="true" />
   </view>
   <button class="send-btn" bindtap="onSend">发送</button>
 </view>
