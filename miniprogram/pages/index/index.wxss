@@ -38,6 +38,9 @@ page {
   font-size: 30rpx;
   line-height: 1.4;
   word-wrap: break-word;
+  word-break: break-all; /* Ensure wrapping for long continuous strings */
+  white-space: pre-wrap; /* Preserve newlines and enable automatic wrapping */
+  display: block; /* Ensure it behaves correctly for wrapping */
 }
 
 .user-message .bubble {
