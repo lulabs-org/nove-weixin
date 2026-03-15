@@ -127,11 +127,15 @@ export class MCPClient {
           // Normalize endpoint URL
           if (currentData.startsWith("http")) {
             this.postUrl = currentData;
+          } else if (currentData.startsWith("/")) {
+            // Host-relative path
+            const hostRoot = this.sseUrl.split("/").slice(0, 3).join("/");
+            this.postUrl = hostRoot + currentData;
           } else {
-            // Relative path
-            const baseUrl = this.sseUrl.split("/").slice(0, 3).join("/");
-            this.postUrl =
-              baseUrl + (currentData.startsWith("/") ? "" : "/") + currentData;
+            // Path-relative path
+            const lastSlashIndex = this.sseUrl.lastIndexOf("/");
+            const baseDir = this.sseUrl.substring(0, lastSlashIndex);
+            this.postUrl = baseDir + "/" + currentData;
           }
           console.log("MCP Endpoint established:", this.postUrl);
         } else if (currentEvent === "message" && currentData) {
