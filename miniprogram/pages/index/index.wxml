@@ -15,7 +15,7 @@
 
 <view class="footer">
   <view class="pill-wrapper">
-    <textarea class="chat-input" value="{{inputValue}}" bindinput="onInput" confirm-type="send" bindconfirm="onSend" cursor-spacing="20" placeholder="Message ChatGPT..." auto-height="true" fixed="true" disable-default-padding="true" maxlength="2000" />
+    <textarea class="chat-input" value="{{inputValue}}" bindinput="onInput" confirm-type="send" bindconfirm="onSend" cursor-spacing="20" placeholder="Message Me..." auto-height="true" fixed="true" disable-default-padding="true" maxlength="2000" />
     <view class="send-btn {{inputValue ? 'active' : ''}}" bindtap="onSend">
       <view class="arrow-up"></view>
     </view>
