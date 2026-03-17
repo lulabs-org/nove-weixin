@@ -44,7 +44,7 @@ page {
 }
 
 .user-message .bubble {
-  background-color: #dcdcdc; /* Gray background for user */
+  background-color: #ebebeb; /* Slightly grayer than before */
   color: #000;
 }
 
